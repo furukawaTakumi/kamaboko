@@ -1,2 +1,2 @@
 
-from kamaboko import Kamaboko
+from .kamaboko import Kamaboko
