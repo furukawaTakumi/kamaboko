@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 api_token
-resource
+- resource/noun/.keep
+- resource/wago/.keep
 .DS_Store
