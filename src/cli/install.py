@@ -21,6 +21,41 @@ def install():
     
     print(f"'{args.dic_path}' save to '{save_dir}'. complete.")
 
+def __check_args(args):
+    if not os.path.exists(args.dic_path):
+        raise FileNotFoundError(f"{args.dic_path} is not found.")
+
+def __delimiter(fmt_str: str):
+    return {
+        'csv': ',',
+        'tsv': '\t'
+    }[fmt_str]
+
+def __construct_dict(data: Iterator, args) -> dict:
+    dictionary = {}
+    for row in data:
+        keys = row[args.word_idx].split(' ')
+        tmp_dict = dictionary
+        for idx in range(0, len(keys)):
+            tmp_dict[keys[idx]] = {
+                'dic_type': args.dic_type,
+                'is_end': False
+            }
+            if idx == len(keys) - 1:
+                tmp_dict[keys[idx]]['is_end'] = True
+                tmp_dict[keys[idx]]['polality'] = __polality_label(row[args.polality_idx], args)
+            tmp_dict = tmp_dict[keys[idx]]
+    return dictionary
+
+def __polality_label(label, args):
+    if label in args.positive_labels:
+        return 'p'
+    elif label in args.negative_labels:
+        return 'n'
+    else:
+        print(f"Convert Warning: neither polality label '{label}' is not contained '{args.positive_labels}' or '{args.negative_labels}'.")
+        return 'e'
+
 def __parse_args():
     parser = argparse.ArgumentParser('argument parser')
 
@@ -72,38 +107,3 @@ def __parse_args():
     )
 
     return parser.parse_args()
-
-def __check_args(args):
-    if not os.path.exists(args.dic_path):
-        raise FileNotFoundError(f"{args.dic_path} is not found.")
-
-def __delimiter(fmt_str: str):
-    return {
-        'csv': ',',
-        'tsv': '\t'
-    }[fmt_str]
-
-def __construct_dict(data: Iterator, args) -> dict:
-    dictionary = {}
-    for row in data:
-        keys = row[args.word_idx].split(' ')
-        tmp_dict = dictionary
-        for idx in range(0, len(keys)):
-            tmp_dict[keys[idx]] = {
-                'dic_type': args.dic_type,
-                'is_end': False
-            }
-            if idx == len(keys) - 1:
-                tmp_dict[keys[idx]]['is_end'] = True
-                tmp_dict[keys[idx]]['polality'] = __polality_label(row[args.polality_idx], args)
-            tmp_dict = tmp_dict[keys[idx]]
-    return dictionary
-
-def __polality_label(label, args):
-    if label in args.positive_labels:
-        return 'p'
-    elif label in args.negative_labels:
-        return 'n'
-    else:
-        print(f"Convert Warning: neither polality label '{label}' is not contained '{args.positive_labels}' or '{args.negative_labels}'.")
-        return 'e'
