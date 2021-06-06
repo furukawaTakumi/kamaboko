@@ -1,7 +1,9 @@
 
-import argparse, os, csv
+import argparse, os, csv, json, datetime, pathlib
 from typing import Iterator
 
+
+import kamaboko
 
 parser = argparse.ArgumentParser('argument parser')
 
@@ -21,9 +23,8 @@ parser.add_argument(
     '--file_format',
     help='file type',
     metavar='csv/tsv',
-    action='store_const',
-    const='csv',
-    type=str
+    default='csv',
+    choices=['csv', 'tsv'],
 )
 
 args = parser.parse_args()
@@ -32,11 +33,13 @@ def install():
     __check_args()
     with open(args.dic_path, 'r') as f:
         data = csv.reader(f, delimiter=__delimiter(args.file_format))
+        dictionary = __construct_dict(data)
 
-    if args.dic_type == 'noun':
-        __construct_noun(data)
-    elif args.dic_type == 'collocation':
-        __construct_collocation(data)
+    save_dir = f"{os.path.dirname(kamaboko.__file__)}/resource/{args.dic_type}"
+    filename = args.dic_path.split('/')[-1] + datetime.datetime.now().strftime('%Y__%m__%d-%H__%M__%S.json')
+    pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
+    with open(f"{save_dir}/{filename}", 'w') as f:
+        json.dump(dictionary, f)
 
 
 def __check_args():
@@ -55,16 +58,8 @@ def __delimiter(fmt_str: str):
         'tsv': '\t'
     }[fmt_str]
 
-def __construct_noun(data: Iterator) -> dict:
+def __construct_dict(data: Iterator) -> dict:
     dictionary = {}
     for row in data:
         dictionary[row[0]] = row[1]
     return dictionary
-
-def __construct_collocation(data: Iterator) -> dict:
-    dictionary = {}
-    # for row in data:
-
-def if_not_exists_when_init():
-    # 辞書のキーが存在しないとき、dictで初期化
-    pass
