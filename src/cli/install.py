@@ -34,7 +34,7 @@ def __parse_args():
         'dic_type',
         help='type of dictionary',
         metavar='noun/collocation',
-        type=str
+        choices=['noun', 'collocation']
     )
     parser.add_argument(
         '--file_format',
@@ -49,12 +49,6 @@ def __parse_args():
 def __check_args(args):
     if not os.path.exists(args.dic_path):
         raise FileNotFoundError(f"{args.dic_path} is not found.")
-
-    if not args.dic_type in ['noun', 'collocation']:
-        raise KeyError(f"{args.dic_type} is unkown type of dictionary.")
-    
-    if not args.file_format in ['csv', 'tsv']:
-        raise KeyError(f"{args.file_format} is not supported.")
 
 def __delimiter(fmt_str: str):
     return {
