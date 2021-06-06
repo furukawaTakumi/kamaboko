@@ -5,32 +5,10 @@ from typing import Iterator
 
 import kamaboko
 
-parser = argparse.ArgumentParser('argument parser')
-
-parser.add_argument(
-    'dic_path',
-    help='path of polarity dictionary', 
-    metavar='path/to/dictionary',
-    type=str
-)
-parser.add_argument(
-    'dic_type',
-    help='type of dictionary',
-    metavar='noun/collocation',
-    type=str
-)
-parser.add_argument(
-    '--file_format',
-    help='file type',
-    metavar='csv/tsv',
-    default='csv',
-    choices=['csv', 'tsv'],
-)
-
-args = parser.parse_args()
-
 def install():
-    __check_args()
+    args = __parse_args()
+    __check_args(args)
+
     with open(args.dic_path, 'r') as f:
         data = csv.reader(f, delimiter=__delimiter(args.file_format))
         dictionary = __construct_dict(data)
@@ -40,9 +18,35 @@ def install():
     pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
     with open(f"{save_dir}/{filename}", 'w') as f:
         json.dump(dictionary, f)
+    
+    print(f"'{args.dic_path}' save to '{save_dir}'. complete.")
 
+def __parse_args():
+    parser = argparse.ArgumentParser('argument parser')
 
-def __check_args():
+    parser.add_argument(
+        'dic_path',
+        help='path of polarity dictionary', 
+        metavar='path/to/dictionary',
+        type=str
+    )
+    parser.add_argument(
+        'dic_type',
+        help='type of dictionary',
+        metavar='noun/collocation',
+        type=str
+    )
+    parser.add_argument(
+        '--file_format',
+        help='file type',
+        metavar='csv/tsv',
+        default='csv',
+        choices=['csv', 'tsv'],
+    )
+
+    return parser.parse_args()
+
+def __check_args(args):
     if not os.path.exists(args.dic_path):
         raise FileNotFoundError(f"{args.dic_path} is not found.")
 
