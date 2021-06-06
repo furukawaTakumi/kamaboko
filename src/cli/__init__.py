@@ -1,2 +1,2 @@
 
-from cli.command import install
+from cli.install import install
