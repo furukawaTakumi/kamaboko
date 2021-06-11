@@ -17,7 +17,7 @@ class KamabokoTest(unittest.TestCase):
         result = self.kamaboko.analyze("""
         日本にいた頃は一日中、毎晩深夜遅くまで働いていたせいで、美容とかおしゃれとかに縁遠く、立派な喪女だったけど、あまりの変化に最近では鏡を見るのがちょっと楽しい。
         """)
-        self.assertEqual((3,1), result)
+        self.assertEqual((3,1), result) # osetiではpositiveが3, negativeが1である
 
     def tearDown(self):
         pass
