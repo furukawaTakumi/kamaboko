@@ -1,0 +1,2 @@
+
+from .MeCabTokenizer import MecabTokenizer

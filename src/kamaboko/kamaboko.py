@@ -1,6 +1,6 @@
 # 否定型の考慮
 # 並列関係への対応
-import os, glob, MeCab, json
+import os, glob, json
 
 
 import kamaboko
@@ -8,13 +8,12 @@ from .PolalityDict import PolalityDict
 
 
 class Kamaboko:
-    def __init__(self) -> None:
+    def __init__(self, tokenizer) -> None:
         self.dictionary = PolalityDict()
-        self.tokenizer = MeCab.Tagger().parseToNode
+        self.tokenizer = tokenizer
 
     def analyze(self, text):
-        root = self.tokenizer(text)
-        tokens = self.__conv_to_dic_format(root)
+        tokens = self.tokenizer(text)
         result = self.__count_polality(tokens)
         return result
 
@@ -34,26 +33,3 @@ class Kamaboko:
             else:
                 tmp_dict = tmp_dict[st_form]
         return positive_num, negative_num
-    
-    def __conv_to_dic_format(self, node):
-        tokens = []
-        while node:
-            features = node.feature.split(',')
-            token_feature = {
-                'surface': node.surface,
-                'pos': features[0],
-                'pos_detail-1': features[1],
-                'pos_detail-2': features[2],
-                'pos_detail-3': features[3],
-                'conjugation-form': features[4],
-                'conjugation': features[5],
-                'standard_form': features[6],
-                'reading': features[7],
-                'pronunciation': features[8]
-            }
-            tokens.append(token_feature)
-            node = node.next
-        return tokens[1:-1] # token of index 0 and -1 is '*'
-
-
-

@@ -5,12 +5,14 @@ from  collections.abc import Mapping
 
 
 from kamaboko import Kamaboko
+from kamaboko.tokenizers import MecabTokenizer
 
 # 日本語評価極性辞書（用言編）・日本語評価極性辞書（名詞編）を用いた場合のテスト
 
 class KamabokoTest(unittest.TestCase):
     def setUp(self):
-        self.kamaboko = Kamaboko()
+        tokenize = MecabTokenizer()
+        self.kamaboko = Kamaboko(tokenize)
         pass
 
     def test_analyze(self):
@@ -18,6 +20,17 @@ class KamabokoTest(unittest.TestCase):
         日本にいた頃は一日中、毎晩深夜遅くまで働いていたせいで、美容とかおしゃれとかに縁遠く、立派な喪女だったけど、あまりの変化に最近では鏡を見るのがちょっと楽しい。
         """)
         self.assertEqual((3,1), result) # osetiではpositiveが3, negativeが1である
+
+    # def test_react_negative(self):
+    #     result = self.kamaboko.analyze("""
+    #     それでは加賀が救われない．
+    #     """) # ポジティブ動詞　＋　動詞（未然形）　＋　助動詞（ない）　＝　ネガティブ
+    #     self.assertEqual((0, 1), result)
+
+    #     result = self.kamaboko.analyze("""
+    #     わかった、怒らないから、はなしてごらん？
+    #     """) # ポジティブ動詞（未然形）　＋　助動詞（ない）　＝　ネガティブ
+    #     self.assertEqual((0, 1), result)
 
     def tearDown(self):
         pass
