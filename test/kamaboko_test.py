@@ -23,10 +23,15 @@ class KamabokoTest(unittest.TestCase):
     
     def test_collocation(self):
         result = self.kamaboko.analyze("""途方も無い作業だ．""")
-        self.assertEqual((0,1), result)
+        self.assertEqual((0,1), result, "前方一致している連語に対処できていないようです")
 
-        # TODO: 「途方もない」だとマッチしない．
-        # データには存在しているので辞書インストール時のバグであると考えられる
+        result = self.kamaboko.analyze("""途方もない作業だ．""")
+        self.assertEqual((0,1), result, "前方一致している連語に対処できていないようです")
+
+        result = self.kamaboko.analyze("""え、まったく違和感ないわ""")
+        self.assertEqual((1,0), result, "前方一致している連語に対処できていないようです")
+        result = self.kamaboko.analyze("""まったく違和感がないです．""")
+        self.assertEqual((1,0), result, "前方一致している連語に対処できていないようです")
 
     def test_collocation_negation(self):
         result = self.kamaboko.analyze("""

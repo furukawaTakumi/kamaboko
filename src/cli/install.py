@@ -37,10 +37,8 @@ def __construct_dict(data: Iterator, args) -> dict:
         keys = row[args.word_idx].split(' ')
         tmp_dict = dictionary
         for idx in range(0, len(keys)):
-            tmp_dict[keys[idx]] = {
-                'dic_type': args.dic_type,
-                'is_end': False
-            }
+            if not keys[idx] in tmp_dict.keys():
+                tmp_dict[keys[idx]] = { 'is_end': False }
             if idx == len(keys) - 1:
                 tmp_dict[keys[idx]]['is_end'] = True
                 tmp_dict[keys[idx]]['polality'] = __polality_label(row[args.polality_idx], args)
