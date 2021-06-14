@@ -21,12 +21,18 @@ class KamabokoTest(unittest.TestCase):
         """)
         self.assertEqual((3,1), result) # osetiではpositiveが3, negativeが1である
     
-    def test_negative_collocation(self):
+    def test_collocation(self):
         result = self.kamaboko.analyze("""途方も無い作業だ．""")
         self.assertEqual((0,1), result)
 
         # TODO: 「途方もない」だとマッチしない．
         # データには存在しているので辞書インストール時のバグであると考えられる
+
+    def test_collocation_negation(self):
+        result = self.kamaboko.analyze("""
+        この靴のサイズ、ふたつとなくない？
+        """) # ふたつとないがポジティブで、その否定だから
+        self.assertEqual((0, 1), result)
 
     def test_react_negation(self):
         result = self.kamaboko.analyze("""
