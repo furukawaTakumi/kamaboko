@@ -6,6 +6,10 @@ import kamaboko
 
 class PolalityDict():
     DICT_TYPES = ['noun', 'collocation'] # start with lowest priority
+    
+    @property
+    def NEGATION_WORDS(self):
+        return ['ない', 'ぬ', 'ん']
 
     def __init__(self):
         self.resource_path = f"{os.path.dirname(kamaboko.__file__)}/resource"

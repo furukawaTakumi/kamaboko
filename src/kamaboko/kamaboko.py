@@ -18,8 +18,8 @@ class Kamaboko:
     def analyze(self, text):
         tokens = self.tokenizer(text)
         tokens = self.__apply_polality_word(tokens)
-        pprint(tokens)
-        tokens = self.__apply_negative_word(tokens)
+        tokens = self.__apply_negation_word(tokens)
+        print('tokens', tokens)
         result = self.__count_polality(tokens)
         return result
 
@@ -49,7 +49,25 @@ class Kamaboko:
                 depth += 1
         return tokens
 
-    def __apply_negative_word(self, tokens: list):
+    def __apply_negation_word(self, tokens: list):
+        for idx, tkn in enumerate(tokens):
+            if not 'polality' in tkn.keys():
+                continue
+            tkn['negation_count'] = 0
+            if not tkn['pos'] in ['形容詞', '動詞']:
+                continue
+
+            for t in tokens[idx+1:min(idx+4,len(tokens))]:
+                if not t['pos'] in ['動詞', '助動詞']:
+                    break
+                if t['pos'] == '助動詞' and t['standard_form'] in self.dictionary.NEGATION_WORDS:
+                    tkn['polality'] *= -1
+                    tkn['negation_count'] += 1
+                    t['is_negation_word'] = True
+                    break
+
+                if t['conjugation'] != '未然形': # （助）動詞の未然形に否定語は繋がってくる 待た せ ない　など来た時のために動詞もokに
+                    break
         return tokens
 
     def __calc_score(self, polality: str):
@@ -62,17 +80,11 @@ class Kamaboko:
 
     def __count_polality(self, tokens: list):
         positive_num, negative_num = 0, 0
-        tmp_dict = self.dictionary
         for tkn in tokens:
-            st_form = tkn['standard_form']
-            if not st_form in tmp_dict.keys():
-                tmp_dict = self.dictionary
+            if not 'polality' in tkn.keys():
                 continue
-
-            if tmp_dict[st_form]['is_end']:
-                positive_num += tmp_dict[st_form]['polality'] == 'p'
-                negative_num += tmp_dict[st_form]['polality'] == 'n'
-                tmp_dict = self.dictionary
-            else:
-                tmp_dict = tmp_dict[st_form]
+            if 0 < tkn['polality']:
+                positive_num += 1
+            elif 0 > tkn['polality']:
+                negative_num += 1
         return positive_num, negative_num
