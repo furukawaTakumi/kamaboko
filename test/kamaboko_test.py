@@ -28,7 +28,7 @@ class KamabokoTest(unittest.TestCase):
         # TODO: 「途方もない」だとマッチしない．
         # データには存在しているので辞書インストール時のバグであると考えられる
 
-    def test_react_negative(self):
+    def test_react_negation(self):
         result = self.kamaboko.analyze("""
         それでは加賀が救われない．
         """) # ポジティブ動詞　＋　動詞（未然形）　＋　助動詞（ない）　＝　ネガティブ
@@ -55,15 +55,16 @@ class KamabokoTest(unittest.TestCase):
         self.assertEqual((0, 2), result, '"信じる-られる-ぬ","信じる-ぬ"に無反応です')
 
         # result = self.kamaboko.analyze("""
-        # このラーメンは美味しくありません．
-        # """)
-        # self.assertEqual((0, 1), result, '"ある-ます-ん"に反応していません')
-
-        # result = self.kamaboko.analyze("""
         # 馬鹿な．信じられるわけがないだろう
         # """)
         # self.assertEqual((0, 1), result, '"信じられるわけが-ない"に無反応です')
         # 構文解析してやるべき内容
+
+    def test_arimasen_negation(self):
+        result = self.kamaboko.analyze("""
+        このラーメンは美味しくありません．
+        """)
+        self.assertEqual((0, 1), result, '"ある-ます-ん"に反応していません')
 
     def tearDown(self):
         pass

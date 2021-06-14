@@ -19,7 +19,7 @@ class Kamaboko:
         tokens = self.tokenizer(text)
         tokens = self.__apply_polality_word(tokens)
         tokens = self.__apply_negation_word(tokens)
-        print('tokens', tokens)
+        tokens = self.__apply_arimasen(tokens)
         result = self.__count_polality(tokens)
         return result
 
@@ -68,6 +68,22 @@ class Kamaboko:
 
                 if t['conjugation'] != '未然形': # （助）動詞の未然形に否定語は繋がってくる 待た せ ない　など来た時のために動詞もokに
                     break
+        return tokens
+
+    def __apply_arimasen(self, tokens):
+        for idx in range(1, len(tokens) - 3):
+            is_exists = True
+            for i, search_tkn in enumerate(['ある', 'ます', 'ん']):
+                if tokens[idx + i]['standard_form'] != search_tkn:
+                    is_exists = False
+            if not is_exists:
+                continue
+            if 'polality' in tokens[idx - 1].keys():
+                tokens[idx - 1]['polality'] *= -1
+                if 'negation_count' in tokens[idx - 1].keys():
+                    tokens[idx - 1]['negation_count'] += 1
+                else:
+                    tokens[idx - 1]['negation_count'] = 1
         return tokens
 
     def __calc_score(self, polality: str):
