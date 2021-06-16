@@ -19,7 +19,6 @@ class Kamaboko:
         tokens = self.tokenizer(text)
         tokens = self.__apply_polality_word(tokens)
         tokens = self.__apply_negation_word(tokens)
-        # tokens = self.__apply_arimasen(tokens)
         result = self.__count_polality(tokens)
         return result
 
@@ -50,15 +49,18 @@ class Kamaboko:
         return tokens
 
     def __apply_negation_word(self, tokens: list):
-        for idx, tkn in enumerate(tokens):
+        for idx, _ in enumerate(tokens):
             for i in range(1, len(tokens)):
                 if idx + i >= len(tokens):
                     break
-                if 'polality' in tokens[idx + i]:
+                now_t = tokens[idx + i]
+                if 'polality' in now_t:
                     break
-                if '接続詞' == tokens[idx + 1]['pos']:
+                if '接続詞' == now_t['pos']:
                     break # 接続詞が入るところで一つの意味となるので
-                if tokens[idx + i]['standard_form'] in self.dictionary.NEGATION_WORDS:
+                if '名詞' == now_t['pos'] and now_t['pos_detail-1'] == '非自立' and now_t['pos_detail-2'] == '副詞可能':
+                    break # 「お金がないうえ〜」の時に否定内容は一度確定するはず
+                if now_t['standard_form'] in self.dictionary.NEGATION_WORDS:
                     tokens[idx]['negation_count'] + 1
                     tokens[idx]['polality'] *= -1
         return tokens

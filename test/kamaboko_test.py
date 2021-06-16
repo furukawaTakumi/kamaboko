@@ -81,6 +81,10 @@ class KamabokoTest(unittest.TestCase):
         """)
         self.assertEqual((0, 1), result)
 
+    def test_not_exist_word_negation(self):
+        result = self.kamaboko.analyze("""お金がないうえアダマンタイトもない""") # アダマンタイトは未登録語彙
+        self.assertEqual((0, 1), result, "未登録語彙アダマンタイトの否定により解析が失敗")
+
     # def test_triple_negation(self):
         # text = "人望も金も技術も、ない人間が、ただ一人運命に抗う物語"
         # 人望 金 技術 => + 3, ないないづくし 
