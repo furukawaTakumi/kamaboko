@@ -23,9 +23,9 @@ class MecabTokenizer:
                 'pos_detail-3': features[3],
                 'conjugation-form': features[4],
                 'conjugation': features[5],
-                'standard_form': features[6],
-                'reading': features[7],
-                'pronunciation': features[8]
+                'standard_form': features[6] if '*' == features[6] else node.surface,
+                'reading': features[7] if len(features) > 7 else '',
+                'pronunciation': features[8] if len(features) > 8 else ''
             })
             tokens.append(token_feature)
             node = node.next
