@@ -23,7 +23,7 @@ class MecabTokenizer:
                 'pos_detail-3': features[3],
                 'conjugation-form': features[4],
                 'conjugation': features[5],
-                'standard_form': features[6] if '*' == features[6] else node.surface,
+                'standard_form': features[6] if '*' != features[6] else node.surface,
                 'reading': features[7] if len(features) > 7 else '',
                 'pronunciation': features[8] if len(features) > 8 else ''
             })
