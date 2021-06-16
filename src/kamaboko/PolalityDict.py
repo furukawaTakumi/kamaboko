@@ -1,8 +1,9 @@
 
 import os, glob, json
-
+from collections import defaultdict
 
 import kamaboko
+
 
 class PolalityDict():
     DICT_TYPES = ['noun', 'collocation'] # start with lowest priority
@@ -18,7 +19,7 @@ class PolalityDict():
         self.__define_dict_methods()
 
     def __load_dict(self, resource_path):
-        dictionary = {}
+        dictionary = defaultdict(lambda: 0)
         for dict_type in self.DICT_TYPES:
             file_items = [
                 (file_path, os.path.getmtime(file_path))

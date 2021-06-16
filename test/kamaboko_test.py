@@ -1,7 +1,6 @@
 
 
 import unittest
-from  collections.abc import Mapping
 
 
 from kamaboko import Kamaboko
@@ -65,17 +64,31 @@ class KamabokoTest(unittest.TestCase):
         """)
         self.assertEqual((0, 2), result, '"信じる-られる-ぬ","信じる-ぬ"に無反応です')
 
-        # result = self.kamaboko.analyze("""
-        # 馬鹿な．信じられるわけがないだろう
-        # """)
-        # self.assertEqual((0, 1), result, '"信じられるわけが-ない"に無反応です')
-        # 構文解析してやるべき内容
+        result = self.kamaboko.analyze("""
+        馬鹿な．信じられるわけがないだろう
+        """)
+        self.assertEqual((0, 1), result, '"信じられるわけが-ない"に無反応です')
 
     def test_arimasen_negation(self):
         result = self.kamaboko.analyze("""
         このラーメンは美味しくありません．
         """)
         self.assertEqual((0, 1), result, '"ある-ます-ん"に反応していません')
+
+    def test_postpositional_particle(self):
+        result = self.kamaboko.analyze("""
+        利点がない
+        """)
+        self.assertEqual((0, 1), result)
+
+    # def test_triple_negation(self):
+        # text = "人望も金も技術も、ない人間が、ただ一人運命に抗う物語"
+        # 人望 金 技術 => + 3, ないないづくし 
+        # result = self.kamaboko.analyze(text)
+        # self.assertEqual((0, 3), result, "")
+
+
+
 
     def tearDown(self):
         pass

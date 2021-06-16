@@ -1,5 +1,6 @@
 
 import MeCab
+from collections import defaultdict
 
 class MecabTokenizer:
     def __init__(self) -> None:
@@ -14,7 +15,7 @@ class MecabTokenizer:
         tokens = []
         while node:
             features = node.feature.split(',')
-            token_feature = {
+            token_feature = defaultdict(lambda: 0, {
                 'surface': node.surface,
                 'pos': features[0],
                 'pos_detail-1': features[1],
@@ -25,7 +26,7 @@ class MecabTokenizer:
                 'standard_form': features[6],
                 'reading': features[7],
                 'pronunciation': features[8]
-            }
+            })
             tokens.append(token_feature)
             node = node.next
         return tokens[1:-1] # token of index 0 and -1 is '*'
