@@ -1,7 +1,7 @@
 
 
 import CaboCha
-from attrdict import AttrDefault
+from attrdict import AttrDict
 
 
 class CaboChaAnalyzer():
@@ -18,7 +18,7 @@ class CaboChaAnalyzer():
     def __conv_to_tokens_and_chunks(self, output: str):
         tokens = []
         chunks = []
-        token = AttrDefault(int)
+        token = AttrDict()
         chunk = []
         for line in output.splitlines():
             if line.startswith('EOS'):
@@ -44,9 +44,7 @@ class CaboChaAnalyzer():
                 token.standard_form = features[6] if features[6] != '*' else surface
                 token.reading = features[7] if len(features) > 7 else ''
                 token.pronunciation = features[8] if len(features) > 8 else ''
-                tokens.append(token)
-                chunk.append(token)
-                token = AttrDefault(int)
+                token = AttrDict()
         return tokens, chunks
 
     def __add_chunk_from_info(self, chunks):

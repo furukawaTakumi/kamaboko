@@ -4,14 +4,12 @@ import unittest
 
 
 from kamaboko import Kamaboko
-from kamaboko.tokenizers import MecabTokenizer
 
 # 日本語評価極性辞書（用言編）・日本語評価極性辞書（名詞編）を用いた場合のテスト
 
 class KamabokoTest(unittest.TestCase):
     def setUp(self):
-        tokenize = MecabTokenizer()
-        self.kamaboko = Kamaboko(tokenize)
+        self.kamaboko = Kamaboko(None)
         pass
 
     def test_analyze(self):
@@ -21,16 +19,21 @@ class KamabokoTest(unittest.TestCase):
         self.assertEqual((3, 1), result) # osetiではpositiveが3, negativeが1である
     
     def test_collocation(self):
-        result = self.kamaboko.analyze("""途方も無い作業だ．""")
-        self.assertEqual((0,1), result, "前方一致している連語に対処できていないようです")
+        text = """途方も無い作業だ．"""
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((0,1), result, f"'{text}'に対処できていないようです")
 
-        result = self.kamaboko.analyze("""途方もない作業だ．""")
-        self.assertEqual((0,1), result, "前方一致している連語に対処できていないようです")
+        text = """途方もない作業だ．"""
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((0,1), result, f"'{text}'に対処できていないようです")
 
-        result = self.kamaboko.analyze("""え、まったく違和感ないわ""")
-        self.assertEqual((1,0), result, "前方一致している連語に対処できていないようです")
-        result = self.kamaboko.analyze("""まったく違和感がないです．""")
-        self.assertEqual((1,0), result, "前方一致している連語に対処できていないようです")
+        text = """え、まったく違和感ないわ"""
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((1,0), result, f"'{text}'に対処できていないようです")
+
+        text = """まったく違和感がないです．"""
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((1,0), result, f"'{text}'に対処できていないようです")
 
     def test_collocation_negation(self):
         result = self.kamaboko.analyze("""
@@ -87,7 +90,7 @@ class KamabokoTest(unittest.TestCase):
         self.assertEqual((0, 1), result, "〜がない、〜はない、に対応できていません")
 
     def test_not_exist_word_negation(self):
-        result = self.kamaboko.analyze("""お金がないうえアダマンタイトもない""") # アダマンタイトは未登録語彙
+        result = self.kamaboko.analyze("""お金がないうえにアダマンタイトもない""") # アダマンタイトは未登録語彙
         self.assertEqual((0, 1), result, "未登録語彙アダマンタイトの否定により解析が失敗")
 
         # result = self.kamaboko.analyze("不満はないけど気持ち良くないから、なんかいやだ")
@@ -95,10 +98,10 @@ class KamabokoTest(unittest.TestCase):
         # self.assertEqual((1, 1), result)
 
     # def test_triple_negation(self):
-        # text = "人望も金も技術も、ない人間が、ただ一人運命に抗う物語"
-        # 人望 金 技術 => + 3, ないないづくし 
-        # result = self.kamaboko.analyze(text)
-        # self.assertEqual((0, 3), result, "")
+    #     text = "人望も金も技術も、ない人間が、ただ一人運命に抗う物語"
+    #     # 人望 金 技術 => + 3, ないないづくし 
+    #     result = self.kamaboko.analyze(text)
+    #     self.assertEqual((0, 3), result, "")
 
 
 
