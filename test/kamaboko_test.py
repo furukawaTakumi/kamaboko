@@ -18,7 +18,7 @@ class KamabokoTest(unittest.TestCase):
         result = self.kamaboko.analyze("""
         日本にいた頃は一日中、毎晩深夜遅くまで働いていたせいで、美容とかおしゃれとかに縁遠く、立派な喪女だったけど、あまりの変化に最近では鏡を見るのがちょっと楽しい。
         """)
-        self.assertEqual((3,1), result) # osetiではpositiveが3, negativeが1である
+        self.assertEqual((3, 1), result) # osetiではpositiveが3, negativeが1である
     
     def test_collocation(self):
         result = self.kamaboko.analyze("""途方も無い作業だ．""")
@@ -36,7 +36,7 @@ class KamabokoTest(unittest.TestCase):
         result = self.kamaboko.analyze("""
         この靴のサイズ、ふたつとなくない？
         """) # ふたつとないがポジティブで、その否定だから
-        self.assertEqual((0, 1), result)
+        self.assertEqual((0, 1), result, "連語の否定が判定できていません")
 
     def test_react_negation(self):
         result = self.kamaboko.analyze("""
@@ -81,9 +81,18 @@ class KamabokoTest(unittest.TestCase):
         """)
         self.assertEqual((0, 1), result)
 
+        result = self.kamaboko.analyze("""
+        利益は今週末に確かに洞窟に入ったところに置いておくと言われていたのに払われていない．
+        """)
+        self.assertEqual((0, 1), result, "〜がない、〜はない、に対応できていません")
+
     def test_not_exist_word_negation(self):
         result = self.kamaboko.analyze("""お金がないうえアダマンタイトもない""") # アダマンタイトは未登録語彙
         self.assertEqual((0, 1), result, "未登録語彙アダマンタイトの否定により解析が失敗")
+
+        # result = self.kamaboko.analyze("不満はないけど気持ち良くないから、なんかいやだ")
+        # # TODO: 重複した語彙・連語による問題を解消する必要がある
+        # self.assertEqual((1, 1), result)
 
     # def test_triple_negation(self):
         # text = "人望も金も技術も、ない人間が、ただ一人運命に抗う物語"
