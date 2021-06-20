@@ -40,24 +40,21 @@ class Kamaboko:
                 tmp_dict = self.dictionary
                 depth = 0
             else:
-                # if 'polality' in tmp_dict.keys():
-                #     tokens[idx].polality = self.__calc_score(tmp_dict['polality'])
-                #     tokens[idx].noun_polality = True
                 tmp_dict = tmp_dict[st_form]
                 depth += 1
         return tokens
     
     def __apply_negation_word(self, tokens, chunks):
-        for tkn in tokens:
-            if not 'is_subject' in tkn.keys(): # 主辞を優先
+        for tkn in tokens: # 主辞を優先して探索
+            if not 'is_subject' in tkn.keys():
                 continue
             chunk = chunks[tkn.belong_to]
-            for tkn in chunk:
-                if not 'polality' in tkn.keys():
+            for c in chunk:
+                if not 'polality' in c.keys():
                     continue
-                chunk_items = self.__collect_dep_chunks(tkn.belong_to, chunks)
-                negation_count = self.__negation_count(chunk_items)
-                tkn.polality = tkn.polality * pow(-1, negation_count)
+                chunk_items = self.__collect_dep_chunks(c.belong_to, chunks)
+                negation_count = self.__negation_count(chunk_items, False)
+                c.polality = c.polality * pow(-1, negation_count)
 
         for c_idx, chunk in enumerate(chunks):
             for tkn in chunk:
@@ -81,14 +78,14 @@ class Kamaboko:
                 break
         return chunk_items
 
-    def __negation_count(self, chunk_items):
+    def __negation_count(self, chunk_items, apply_scaned=True):
         negation_cnt = 0
         for idx, c in enumerate(chunk_items):
             if idx + 1 < len(chunk_items) \
             and '接続助詞' == c.pos_detail_1 \
             and chunk_items[idx + 1].pos_detail_1 == '自立':
                 break
-            if 'is_scaned' in chunk_items[idx].keys():
+            if apply_scaned and 'is_scaned' in chunk_items[idx].keys():
                 break
             if not 'is_collocation_parts' in c.keys() \
             and c.standard_form in self.dictionary.NEGATION_WORDS:
@@ -111,6 +108,15 @@ class Kamaboko:
             if tokens[tmp_idx+1].pos_detail_1 == '係助詞' \
             and tokens[tmp_idx+1].standard_form == 'は':
                 tokens[idx].is_subject = True
+            
+            if 'is_subject' in tokens[idx]: # 並列関係が存在するときはそいつらも主語判定
+                for t in reversed(tokens[:idx-1]):
+                    if not t.standard_form in ['と', 'や', 'も', 'やら', 'に']:
+                        if '名詞' != t.pos:
+                            break
+
+                    if t.pos == '名詞':
+                        t.is_subject = True
             
     def __calc_score(self, polality: str):
         if polality == 'p':
