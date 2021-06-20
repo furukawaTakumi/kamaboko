@@ -18,6 +18,7 @@ class CaboChaAnalyzer():
     def __conv_to_tokens_and_chunks(self, output: str):
         tokens = []
         chunks = []
+        chunk_num = 0
         token = AttrDict()
         chunk = []
         for line in output.splitlines():
@@ -31,6 +32,7 @@ class CaboChaAnalyzer():
                 if 0 < len(chunk):
                     chunks.append(chunk)
                     chunk = []
+                    chunk_num += 1
             else:
                 surface, feature_str = line.split('\t')
                 features = feature_str.split(',')
@@ -44,6 +46,7 @@ class CaboChaAnalyzer():
                 token.standard_form = features[6] if features[6] != '*' else surface
                 token.reading = features[7] if len(features) > 7 else ''
                 token.pronunciation = features[8] if len(features) > 8 else ''
+                token.belong_to = chunk_num
                 tokens.append(token)
                 chunk.append(token)
                 token = AttrDict()

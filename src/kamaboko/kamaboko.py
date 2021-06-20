@@ -1,7 +1,3 @@
-# 否定型の考慮
-# 並列関係への対応
-import os, glob, json
-from pprint import pprint
 
 import kamaboko
 from .PolalityDict import PolalityDict
@@ -9,15 +5,14 @@ from .analyzers import CaboChaAnalyzer
 
 
 class Kamaboko:
-    def __init__(self, tokenizer) -> None:
+    def __init__(self) -> None:
         self.dictionary = PolalityDict()
         self.cabocha = CaboChaAnalyzer()
-        if tokenizer is not None:
-            self.tokenizer = tokenizer
 
     def analyze(self, text):
         tokens, chunks = self.cabocha(text)
         tokens = self.__apply_polality_word(tokens)
+        self.__mark_subject(tokens)
         self.__apply_negation_word(tokens, chunks)
         result = self.__count_polality(tokens)
         return result
@@ -45,20 +40,31 @@ class Kamaboko:
                 tmp_dict = self.dictionary
                 depth = 0
             else:
+                # if 'polality' in tmp_dict.keys():
+                #     tokens[idx].polality = self.__calc_score(tmp_dict['polality'])
+                #     tokens[idx].noun_polality = True
                 tmp_dict = tmp_dict[st_form]
                 depth += 1
         return tokens
     
     def __apply_negation_word(self, tokens, chunks):
+        for tkn in tokens:
+            if not 'is_subject' in tkn.keys(): # 主辞を優先
+                continue
+            chunk = chunks[tkn.belong_to]
+            for tkn in chunk:
+                if not 'polality' in tkn.keys():
+                    continue
+                chunk_items = self.__collect_dep_chunks(tkn.belong_to, chunks)
+                negation_count = self.__negation_count(chunk_items)
+                tkn.polality = tkn.polality * pow(-1, negation_count)
+
         for c_idx, chunk in enumerate(chunks):
             for tkn in chunk:
                 if not 'polality' in tkn.keys():
                     continue
-                print('tkn', tkn.standard_form)
                 chunk_items = self.__collect_dep_chunks(c_idx, chunks)
-                print('chunk_items', chunk_items)
                 negation_count = self.__negation_count(chunk_items)
-                print('negation_count', negation_count)
 
                 tkn.polality = tkn.polality * pow(-1, negation_count)
     
@@ -78,16 +84,34 @@ class Kamaboko:
     def __negation_count(self, chunk_items):
         negation_cnt = 0
         for idx, c in enumerate(chunk_items):
-            print('c.standard_form', c.standard_form)
             if idx + 1 < len(chunk_items) \
             and '接続助詞' == c.pos_detail_1 \
             and chunk_items[idx + 1].pos_detail_1 == '自立':
                 break
+            if 'is_scaned' in chunk_items[idx].keys():
+                break
             if not 'is_collocation_parts' in c.keys() \
             and c.standard_form in self.dictionary.NEGATION_WORDS:
+                c.is_scaned = True
                 negation_cnt += 1
         return negation_cnt
 
+    def __mark_subject(self, tokens):
+        for idx in range(0, len(tokens) - 2):
+            if tokens[idx].pos != '名詞':
+                continue
+            
+            tmp_idx = idx
+            if tokens[idx+1].pos == '名詞' \
+            and tokens[idx+1].pos_detail_1 == '接尾':
+                tmp_idx + 1
+            if tokens[tmp_idx+1].pos_detail_1 == '格助詞' \
+            and tokens[tmp_idx+1].standard_form == 'が':
+                tokens[idx].is_subject = True
+            if tokens[tmp_idx+1].pos_detail_1 == '係助詞' \
+            and tokens[tmp_idx+1].standard_form == 'は':
+                tokens[idx].is_subject = True
+            
     def __calc_score(self, polality: str):
         if polality == 'p':
             return 1

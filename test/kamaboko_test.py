@@ -9,7 +9,7 @@ from kamaboko import Kamaboko
 
 class KamabokoTest(unittest.TestCase):
     def setUp(self):
-        self.kamaboko = Kamaboko(None)
+        self.kamaboko = Kamaboko()
         pass
 
     def test_analyze(self):
@@ -85,25 +85,49 @@ class KamabokoTest(unittest.TestCase):
         self.assertEqual((0, 1), result)
 
         result = self.kamaboko.analyze("""
-        利益は今週末に確かに洞窟に入ったところに置いておくと言われていたのに払われていない．
+        利益は今週末に間違いなく洞窟に入ったところに置いておくと言われていたのに払われていない．
         """)
-        self.assertEqual((0, 1), result, "〜がない、〜はない、に対応できていません")
+        self.assertEqual((1, 1), result, "〜がない、〜はない、に対応できていません")
+
+        text = """
+        今週末に間違いなく洞窟に入ったところに置いておくと言われていたのに利益分は払われていない．
+        """
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((1, 1), result, text)
+
+        text = """
+        今週末に間違いなく利益分は洞窟に入ったところに置いておくと言われていたのに払われていない．
+        """
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((1, 1), result, text)
 
     def test_not_exist_word_negation(self):
         result = self.kamaboko.analyze("""お金がないうえにアダマンタイトもない""") # アダマンタイトは未登録語彙
         self.assertEqual((0, 1), result, "未登録語彙アダマンタイトの否定により解析が失敗")
 
-        # result = self.kamaboko.analyze("不満はないけど気持ち良くないから、なんかいやだ")
+        # text = "不満はないけど、なんかいやだ"
+        # result = self.kamaboko.analyze(text)
         # # TODO: 重複した語彙・連語による問題を解消する必要がある
-        # self.assertEqual((1, 1), result)
+        # self.assertEqual((1, 1), result, text)
 
-    # def test_triple_negation(self):
-    #     text = "人望も金も技術も、ない人間が、ただ一人運命に抗う物語"
+    # def test_parallel_negation(self):
+    #     text = "人望とお金がない人間が、ただ一人運命に抗う物語"
     #     # 人望 金 技術 => + 3, ないないづくし 
+    #     result = self.kamaboko.analyze(text)
+    #     self.assertEqual((0, 2), result, "")
+
+    #     text = "人望もお金も学もない人間が、ただ一人運命に抗う物語"
     #     result = self.kamaboko.analyze(text)
     #     self.assertEqual((0, 3), result, "")
 
+    def test_double_negation(self):
+        text = "クラッカーは好きではないとは言わないが、それほどじゃない"
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((0, 1), result)
 
+        text = "好ましいと思わないこともない"
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((1, 0), result)
 
 
     def tearDown(self):
