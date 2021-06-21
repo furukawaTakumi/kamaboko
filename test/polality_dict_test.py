@@ -12,7 +12,7 @@ class PolalityDictTest(unittest.TestCase):
         self.assertIsInstance(dic, PolalityDict)
 
         for key in dic.keys():
-            self.assertIsInstance(dic[key], dict)
+            self.assertIsInstance(dic[key], str)
 
 
     def tearDown(self):

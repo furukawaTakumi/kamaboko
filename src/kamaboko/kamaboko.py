@@ -1,5 +1,4 @@
 
-import kamaboko
 from .PolalityDict import PolalityDict
 from .analyzers import CaboChaAnalyzer
 
@@ -11,50 +10,37 @@ class Kamaboko:
 
     def analyze(self, text):
         tokens, chunks = self.cabocha(text)
-        tokens = self.__apply_polality_word(tokens)
-        self.__mark_subject(tokens)
+        self.__apply_polality_word(tokens)
+        self.__mark_subject(tokens, chunks)
+        self.__mark_parallel(tokens)
         self.__apply_negation_word(tokens, chunks)
+        # print('tokens', tokens)
         result = self.__count_polality(tokens)
         return result
 
     def __apply_polality_word(self, tokens: list):
-        tmp_dict = self.dictionary
-        depth = 0
-        for idx, tkn in enumerate(tokens):
-            st_form = tkn['standard_form']
-            if not st_form in tmp_dict.keys():
-                tmp_dict = self.dictionary
-                depth = 0
-                continue
-
-            if tmp_dict[st_form]['is_end']:
-                if 0 < depth:
-                    for i in range(idx - depth, idx + 1):
-                        tokens[i]['is_collocation_parts'] = True
-                    tokens[idx - depth]['is_collocation_start'] = True
-                    tokens[idx]['is_collocation_end'] = True
-                    tokens[idx - depth].polality = self.__calc_score(tmp_dict[st_form]['polality'])
-                else:
-                    tokens[idx].polality = self.__calc_score(tmp_dict[st_form]['polality'])
-
-                tmp_dict = self.dictionary
-                depth = 0
-            else:
-                tmp_dict = tmp_dict[st_form]
-                depth += 1
-        return tokens
+        for idx, _ in enumerate(tokens):
+            key_items = []
+            for sub_tkn in tokens[idx:]:
+                key_items.append(sub_tkn.standard_form)
+                key = ' '.join(key_items)
+                if key in self.dictionary.keys():
+                    tokens[idx].polality = self.__calc_score(self.dictionary[key]) # 連語を優先 (単語の極性値は連語の極性値で上書き)
+                    
+                    if len(key_items) > 1:
+                        for j in range(len(key_items)):
+                            tokens[idx + j].is_collocation_parts = True
     
     def __apply_negation_word(self, tokens, chunks):
         for tkn in tokens: # 主辞を優先して探索
-            if not 'is_subject' in tkn.keys():
-                continue
-            chunk = chunks[tkn.belong_to]
-            for c in chunk:
-                if not 'polality' in c.keys():
-                    continue
-                chunk_items = self.__collect_dep_chunks(c.belong_to, chunks)
-                negation_count = self.__negation_count(chunk_items, False)
-                c.polality = c.polality * pow(-1, negation_count)
+            if 'is_subject' in tkn.keys() or 'is_parallel' in tkn.keys():
+                chunk = chunks[tkn.belong_to]
+                for c in chunk:
+                    if not 'polality' in c.keys():
+                        continue
+                    chunk_items = self.__collect_dep_chunks(c.belong_to, chunks)
+                    negation_count = self.__negation_count(chunk_items, False)
+                    c.polality *= pow(-1, negation_count)
 
         for c_idx, chunk in enumerate(chunks):
             for tkn in chunk:
@@ -62,7 +48,6 @@ class Kamaboko:
                     continue
                 chunk_items = self.__collect_dep_chunks(c_idx, chunks)
                 negation_count = self.__negation_count(chunk_items)
-
                 tkn.polality = tkn.polality * pow(-1, negation_count)
     
     def __collect_dep_chunks(self, start: int, chunks):
@@ -93,8 +78,8 @@ class Kamaboko:
                 negation_cnt += 1
         return negation_cnt
 
-    def __mark_subject(self, tokens):
-        for idx in range(0, len(tokens) - 2):
+    def __mark_subject(self, tokens, chunks):
+        for idx in range(0, len(tokens) - 1):
             if tokens[idx].pos != '名詞':
                 continue
             
@@ -109,15 +94,25 @@ class Kamaboko:
             and tokens[tmp_idx+1].standard_form == 'は':
                 tokens[idx].is_subject = True
             
-            if 'is_subject' in tokens[idx]: # 並列関係が存在するときはそいつらも主語判定
-                for t in reversed(tokens[:idx-1]):
-                    if not t.standard_form in ['と', 'や', 'も', 'やら', 'に']:
-                        if '名詞' != t.pos:
-                            break
+            if 'is_subject' in tokens[idx].keys():
+                if '非自立' == tokens[idx].pos_detail_1: # わけ[非自立]がない　などに対応
+                    chunks[tokens[idx].belong_to - 1][0].is_subject = True
+                elif tokens[idx].pos == '名詞':
+                    tokens[idx].is_subject = True
+    
+    def __mark_parallel(self, tokens):
+        for i, t in enumerate(tokens):
+            if not 'is_subject' in t.keys():
+                continue
+            print('tokens[i]', i, tokens[i])
+            for idx in range(i - 1, -1, -1):
+                print('tokens[idx].standard_form', tokens[idx].standard_form)
+                if '名詞' == tokens[idx].pos:
+                    tokens[idx].is_parallel = True
+                    continue
+                if not tokens[idx].standard_form in ['と', 'や', 'も', 'やら', 'に']:
+                    break
 
-                    if t.pos == '名詞':
-                        t.is_subject = True
-            
     def __calc_score(self, polality: str):
         if polality == 'p':
             return 1

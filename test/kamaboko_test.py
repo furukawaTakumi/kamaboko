@@ -68,9 +68,9 @@ class KamabokoTest(unittest.TestCase):
         self.assertEqual((0, 2), result, '"信じる-られる-ぬ","信じる-ぬ"に無反応です')
 
         result = self.kamaboko.analyze("""
-        馬鹿な．信じられるわけがないだろう
-        """)
-        self.assertEqual((0, 1), result, '"信じられるわけが-ない"に無反応です')
+        バカな、信じられるわけがないだろう
+        """) # バカ: -1, 信じられるわけがない: -1
+        self.assertEqual((0, 2), result, '"信じられるわけが-ない"に無反応です')
 
     def test_arimasen_negation(self):
         result = self.kamaboko.analyze("""

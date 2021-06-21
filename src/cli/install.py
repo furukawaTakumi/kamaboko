@@ -34,15 +34,8 @@ def __delimiter(fmt_str: str):
 def __construct_dict(data: Iterator, args) -> dict:
     dictionary = {}
     for row in data:
-        keys = row[args.word_idx].split(' ')
-        tmp_dict = dictionary
-        for idx in range(0, len(keys)):
-            if not keys[idx] in tmp_dict.keys():
-                tmp_dict[keys[idx]] = { 'is_end': False }
-            if idx == len(keys) - 1:
-                tmp_dict[keys[idx]]['is_end'] = True
-                tmp_dict[keys[idx]]['polality'] = __polality_label(row[args.polality_idx], args)
-            tmp_dict = tmp_dict[keys[idx]]
+        key = row[args.word_idx]
+        dictionary[key] = __polality_label(row[args.polality_idx], args)
     return dictionary
 
 def __polality_label(label, args):
