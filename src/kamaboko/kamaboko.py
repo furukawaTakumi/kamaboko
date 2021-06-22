@@ -16,7 +16,6 @@ class Kamaboko:
         self.__mark_subject(tokens, chunks)
         self.__mark_parallel(tokens)
         self.__apply_negation_word(tokens, chunks)
-        # print('tokens', tokens)
         result = self.__count_polality(tokens)
         return result
 
@@ -35,22 +34,53 @@ class Kamaboko:
     
     def __apply_negation_word(self, tokens, chunks):
         for tkn in tokens: # 主辞を優先して探索
-            if 'is_subject' in tkn.keys() or 'is_parallel_parts' in tkn.keys():
+            if 'is_subject' in tkn.keys():
                 chunk = chunks[tkn.belong_to]
                 for c in chunk:
                     if not 'polality' in c.keys():
                         continue
                     chunk_items = self.__collect_dep_chunks(c.belong_to, chunks)
                     negation_count = self.__negation_count(chunk_items, False)
+                    c.negation_count = negation_count
                     c.polality *= pow(-1, negation_count)
 
         for c_idx, chunk in enumerate(chunks):
             for tkn in chunk:
-                if not 'polality' in tkn.keys():
+                if not 'polality' in tkn.keys() or 'is_scaned' in tkn.keys():
                     continue
                 chunk_items = self.__collect_dep_chunks(c_idx, chunks)
                 negation_count = self.__negation_count(chunk_items)
+                tkn.negation_count = negation_count
                 tkn.polality = tkn.polality * pow(-1, negation_count)
+
+        parallel_parts_items = self.__collect_parallel_parts(tokens)
+
+        for parts in parallel_parts_items:
+            for tkn in parts:
+                if 'negation_count' in tkn.keys() and tkn.negation_count:
+                    parts.append(tkn.negation_count)
+                    break
+
+        for parts in parallel_parts_items:
+            if not isinstance(parts[-1], int):
+                continue
+            v = parts.pop()
+            for tkn in parts:
+                if not 'negation_count' in tkn.keys() or tkn.negation_count == 0:
+                    tkn.negation_count = v
+                    tkn.polality *= pow(-1, v)
+
+    def __collect_parallel_parts(self, tokens):
+        parallel_parts = []
+        tmp_parts = []
+        for tkn in tokens:
+            if 'is_parallel_parts' in tkn.keys() \
+            and 'polality' in tkn.keys():
+                tmp_parts.append(tkn)
+                if 'is_parallel_end' in tkn.keys():
+                    parallel_parts.append(tmp_parts)
+                    tmp_parts = []
+        return parallel_parts
     
     def __collect_dep_chunks(self, start: int, chunks):
         chunk_items = []
@@ -76,8 +106,8 @@ class Kamaboko:
                 break
             if not 'is_collocation_parts' in c.keys() \
             and c.standard_form in self.dictionary.NEGATION_WORDS:
-                c.is_scaned = True
                 negation_cnt += 1
+            c.is_scaned = True
         return negation_cnt
 
     def __mark_subject(self, tokens, chunks):
@@ -103,21 +133,20 @@ class Kamaboko:
                     tokens[idx].is_subject = True
     
     def __mark_parallel(self, tokens):
-        regex = re.compile("名詞(と|や|も|やら|に)名詞")
-
+        regex = re.compile("n((p)n)+")
+        target = ''
         for base_idx in range(len(tokens)):
-            target = ''
-            depth = 0
-            for tkn in tokens[base_idx:]:
-                if '名詞' == tkn.pos:
-                    target += '名詞'
-                else:
-                    target += tkn.standard_form
-                depth += 1
-                if regex.fullmatch(target):
-                    for i in range(base_idx, base_idx+depth):
-                        tokens[i].is_parallel_parts = True
-                    break
+            if '名詞' == tokens[base_idx].pos:
+                target += 'n'
+            elif tokens[base_idx].standard_form in ['と', 'や', 'も', 'に' ,'や' ,'ら']:
+                target += 'p'
+            else:
+                target += 'e'
+        for m in regex.finditer(target):
+            for idx in range(m.start(), m.end()):
+                tokens[idx].is_parallel_parts = True
+            tokens[m.start()].is_parallel_start = True
+            tokens[m.end() - 1].is_parallel_end = True
 
     def __calc_score(self, polality: str):
         if polality == 'p':
