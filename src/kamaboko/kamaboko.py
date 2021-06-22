@@ -1,4 +1,6 @@
 
+import re
+
 from .PolalityDict import PolalityDict
 from .analyzers import CaboChaAnalyzer
 
@@ -33,7 +35,7 @@ class Kamaboko:
     
     def __apply_negation_word(self, tokens, chunks):
         for tkn in tokens: # 主辞を優先して探索
-            if 'is_subject' in tkn.keys() or 'is_parallel' in tkn.keys():
+            if 'is_subject' in tkn.keys() or 'is_parallel_parts' in tkn.keys():
                 chunk = chunks[tkn.belong_to]
                 for c in chunk:
                     if not 'polality' in c.keys():
@@ -101,16 +103,20 @@ class Kamaboko:
                     tokens[idx].is_subject = True
     
     def __mark_parallel(self, tokens):
-        for i, t in enumerate(tokens):
-            if not 'is_subject' in t.keys():
-                continue
-            print('tokens[i]', i, tokens[i])
-            for idx in range(i - 1, -1, -1):
-                print('tokens[idx].standard_form', tokens[idx].standard_form)
-                if '名詞' == tokens[idx].pos:
-                    tokens[idx].is_parallel = True
-                    continue
-                if not tokens[idx].standard_form in ['と', 'や', 'も', 'やら', 'に']:
+        regex = re.compile("名詞(と|や|も|やら|に)名詞")
+
+        for base_idx in range(len(tokens)):
+            target = ''
+            depth = 0
+            for tkn in tokens[base_idx:]:
+                if '名詞' == tkn.pos:
+                    target += '名詞'
+                else:
+                    target += tkn.standard_form
+                depth += 1
+                if regex.fullmatch(target):
+                    for i in range(base_idx, base_idx+depth):
+                        tokens[i].is_parallel_parts = True
                     break
 
     def __calc_score(self, polality: str):
