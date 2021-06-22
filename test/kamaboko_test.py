@@ -102,13 +102,12 @@ class KamabokoTest(unittest.TestCase):
         self.assertEqual((1, 1), result, text)
 
     # def test_not_exist_word_negation(self):
-        # result = self.kamaboko.analyze("""お金がないうえにアダマンタイトもない""") # アダマンタイトは未登録語彙
-        # self.assertEqual((0, 1), result, "未登録語彙アダマンタイトの否定により解析が失敗")
+    #     result = self.kamaboko.analyze("""お金がないうえにアダマンタイトもない""") # アダマンタイトは未登録語彙
+    #     self.assertEqual((0, 1), result, "未登録語彙アダマンタイトの否定により解析が失敗")
 
-        # text = "不満はないけど、なんかいやだ"
-        # result = self.kamaboko.analyze(text)
-        # # TODO: 重複した語彙・連語による問題を解消する必要がある
-        # self.assertEqual((1, 1), result, text)
+    #     text = "不満はあるけど、いやではないかな" # 不満:-1, 「いや」は未登録語彙
+    #     result = self.kamaboko.analyze(text)
+    #     self.assertEqual((1, 1), result, text)
 
     def test_parallel_negation(self):
         text = "これは、人望とお金がない人間が、ただ一人運命に抗う物語"
@@ -119,6 +118,10 @@ class KamabokoTest(unittest.TestCase):
         text = "人望もお金も学もない人間が、ただ一人運命に抗う物語"
         result = self.kamaboko.analyze(text)
         self.assertEqual((0, 3), result, text)
+
+        text = "人望とお金はあるけど、学はない人間が、ただ一人運命に抗う物語"
+        result = self.kamaboko.analyze(text)
+        self.assertEqual((2, 1), result, text)
 
     def test_double_negation(self):
         text = "クラッカーは好きではないとは言わないが、それほどじゃない"
