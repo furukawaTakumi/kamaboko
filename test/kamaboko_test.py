@@ -12,94 +12,51 @@ class KamabokoTest(unittest.TestCase):
         self.kamaboko = Kamaboko()
         pass
 
+    def evaluate(self, text, excepted):
+        result = self.kamaboko.analyze(text)
+        self.assertEqual(excepted, result, text)
+
     def test_analyze(self):
-        result = self.kamaboko.analyze("""
+        self.evaluate("""
         日本にいた頃は一日中、毎晩深夜遅くまで働いていたせいで、美容とかおしゃれとかに縁遠く、立派な喪女だったけど、あまりの変化に最近では鏡を見るのがちょっと楽しい。
-        """)
-        self.assertEqual((3, 1), result) # osetiではpositiveが3, negativeが1である
+        """, (3, 1)) # osetiではpositiveが3, negativeが1である
     
     def test_collocation(self):
-        text = """途方も無い作業だ．"""
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((0,1), result, f"'{text}'に対処できていないようです")
-
-        text = """途方もない作業だ．"""
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((0,1), result, f"'{text}'に対処できていないようです")
-
-        text = """え、まったく違和感ないわ"""
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((1,0), result, f"'{text}'に対処できていないようです")
-
-        text = """まったく違和感がないです．"""
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((1,0), result, f"'{text}'に対処できていないようです")
+        self.evaluate("""途方も無い作業だ．""", (0, 1))
+        self.evaluate("""途方もない作業だ．""", (0, 1))
 
     def test_collocation_negation(self):
-        result = self.kamaboko.analyze("""
-        この靴のサイズ、ふたつとなくない？
-        """) # ふたつとないがポジティブで、その否定だから
-        self.assertEqual((0, 1), result, "連語の否定が判定できていません")
+        self.evaluate("""この靴のサイズ、ふたつとなくない？""", (0, 1))
+        # ふたつとないがポジティブで、その否定だから
+
+        self.evaluate("""え、まったく違和感ないわ""", (1, 0))
+        self.evaluate("""まったく違和感がないです．""", (1, 0))
 
     def test_react_negation(self):
-        result = self.kamaboko.analyze("""
-        それでは加賀が救われない．
-        """) # ポジティブ動詞　＋　動詞（未然形）　＋　助動詞（ない）　＝　ネガティブ
-        self.assertEqual((0, 1), result)
-
-        result = self.kamaboko.analyze("""
-        わかった、怒らないから、はなしてごらん？
-        """) # ポジティブ動詞（未然形）　＋　助動詞（ない）　＝　ネガティブ
-        self.assertEqual((1, 0), result, '"怒る-ない"に無反応です')
-
-        result = self.kamaboko.analyze("""
-        死ななかろう
-        """)
-        self.assertEqual((1, 0), result, '"死な-ない"に無反応です')
-
-        result = self.kamaboko.analyze("""
-        そんなこと、信じられない！
-        """)
-        self.assertEqual((0, 1), result, '"信じる-られる-ない"に無反応です')
-
-        result = self.kamaboko.analyze("""
-        信じられぬから信じぬぞ！
-        """)
-        self.assertEqual((0, 2), result, '"信じる-られる-ぬ","信じる-ぬ"に無反応です')
-
-        result = self.kamaboko.analyze("""
-        バカな、信じられるわけがないだろう
-        """) # バカ: -1, 信じられるわけがない: -1
-        self.assertEqual((0, 2), result, '"信じられるわけが-ない"に無反応です')
+        self.evaluate("""それでは加賀が救われない．""", (0, 1)) # ポジティブ動詞　＋　動詞（未然形）　＋　助動詞（ない）　＝　ネガティブ
+        self.evaluate("""わかった、怒らないから、はなしてごらん？""", (1, 0)) # ポジティブ動詞（未然形）　＋　助動詞（ない）　＝　ネガティブ
+        self.evaluate("""死ななかろう""", (1, 0))
+        self.evaluate("""そんなこと、信じられない！""", (0, 1))
+        self.evaluate("""信じられぬから信じぬぞ！""", (0, 2))
+        self.evaluate("""バカな、信じられるわけがないだろう""", (0, 2)) # バカ: -1, 信じられるわけがない: -1
 
     def test_arimasen_negation(self):
-        result = self.kamaboko.analyze("""
-        このラーメンは美味しくありません．
-        """)
-        self.assertEqual((0, 1), result, '"ある-ます-ん"に反応していません')
+        self.evaluate("""このラーメンは美味しくありません．""", (0, 1))
 
     def test_postpositional_particle(self):
-        result = self.kamaboko.analyze("""
-        利点がない
-        """)
-        self.assertEqual((0, 1), result)
+        self.evaluate("""利点がない""", (0, 1))
+        self.evaluate("""利益は今週末に間違いなく洞窟に入ったところに置いておくと言われていたのに払われていない．""", (1, 1))
+        self.evaluate("""今週末に間違いなく洞窟に入ったところに置いておくと言われていたのに利益分は払われていない．""", (1, 1))
+        self.evaluate("""今週末に間違いなく利益分は洞窟に入ったところに置いておくと言われていたのに払われていない．""", (1, 1))
 
-        result = self.kamaboko.analyze("""
-        利益は今週末に間違いなく洞窟に入ったところに置いておくと言われていたのに払われていない．
-        """)
-        self.assertEqual((1, 1), result, "〜がない、〜はない、に対応できていません")
+    def test_parallel_negation(self):
+        self.evaluate("これは、人望とお金がない人間が、ただ一人運命に抗う物語", (0, 2)) # 人望 金 => +1 
+        self.evaluate("人望もお金も学もない人間が、ただ一人運命に抗う物語", (0, 3))
+        self.evaluate("人望とお金はあるけど、学はない人間が、ただ一人運命に抗う物語", (2, 1))
 
-        text = """
-        今週末に間違いなく洞窟に入ったところに置いておくと言われていたのに利益分は払われていない．
-        """
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((1, 1), result, text)
-
-        text = """
-        今週末に間違いなく利益分は洞窟に入ったところに置いておくと言われていたのに払われていない．
-        """
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((1, 1), result, text)
+    def test_double_negation(self):
+        self.evaluate("クラッカーは好きではないとは言わないが、それほどじゃない",(0, 1))
+        self.evaluate("好ましいと思わないこともない", (1, 0))
 
     # def test_not_exist_word_negation(self):
     #     result = self.kamaboko.analyze("""お金がないうえにアダマンタイトもない""") # アダマンタイトは未登録語彙
@@ -108,30 +65,6 @@ class KamabokoTest(unittest.TestCase):
     #     text = "不満はあるけど、いやではないかな" # 不満:-1, 「いや」は未登録語彙
     #     result = self.kamaboko.analyze(text)
     #     self.assertEqual((1, 1), result, text)
-
-    def test_parallel_negation(self):
-        text = "これは、人望とお金がない人間が、ただ一人運命に抗う物語"
-        # 人望 金 技術 => + 3, ないないづくし 
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((0, 2), result, text)
-
-        text = "人望もお金も学もない人間が、ただ一人運命に抗う物語"
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((0, 3), result, text)
-
-        text = "人望とお金はあるけど、学はない人間が、ただ一人運命に抗う物語"
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((2, 1), result, text)
-
-    def test_double_negation(self):
-        text = "クラッカーは好きではないとは言わないが、それほどじゃない"
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((0, 1), result)
-
-        text = "好ましいと思わないこともない"
-        result = self.kamaboko.analyze(text)
-        self.assertEqual((1, 0), result)
-
 
     def tearDown(self):
         pass
