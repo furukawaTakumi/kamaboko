@@ -1,5 +1,6 @@
 
 import os, glob, json
+from pathlib import Path
 from collections import defaultdict
 
 import kamaboko
@@ -22,12 +23,12 @@ class PolalityDict():
         dictionary = defaultdict(lambda: 0)
         for dict_type in self.DICT_TYPES:
             file_items = [
-                (file_path, os.path.getmtime(file_path))
-                for file_path in glob.glob(f"{resource_path}/{dict_type}/*.json")
+                (Path(file_path), os.path.getmtime(file_path))
+                for file_path in glob.glob(f"{resource_path}/{dict_type}/*")
             ]
-            latest_file = sorted(file_items, key=lambda x: x[1], reverse=True)[0][0]
-            with open(latest_file, 'rb') as f:
-                dictionary.update(json.load(f))
+            for file_item in sorted(file_items, key=lambda x: x[1]):
+                with file_item[0].open('rb') as f:
+                    dictionary.update(json.load(f))
         return dictionary
 
     def __check_exist_dictionary(self, resource_path: str):

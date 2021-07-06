@@ -5,12 +5,12 @@ import os, argparse
 import kamaboko
 
 
-def delete():
-    args = __parse_args()
+def delete(args = None):
+    if args == None:
+        args = __parse_args()
     file_path = f"{os.path.dirname(kamaboko.__file__)}/resource/{args.dic_type}/{args.dic_name}"
     
     if not os.path.exists(file_path):
-        print('file_path', file_path)
         raise FileNotFoundError(f"'{args.dic_name}' does not found.")
 
     os.remove(file_path)

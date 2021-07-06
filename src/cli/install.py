@@ -5,8 +5,9 @@ from typing import Iterator
 
 import kamaboko
 
-def install():
-    args = __parse_args()
+def install(args = None):
+    if args == None:
+        args = __parse_args()
     __check_args(args)
 
     with open(args.dic_path, 'r') as f:
@@ -14,7 +15,7 @@ def install():
         dictionary = __construct_dict(data, args)
 
     save_dir = f"{os.path.dirname(kamaboko.__file__)}/resource/{args.dic_type}"
-    filename = args.dic_path.split('/')[-1] + datetime.datetime.now().strftime('%Y__%m__%d-%H__%M__%S.json')
+    filename = args.dic_path.split('/')[-1]
     pathlib.Path(save_dir).mkdir(parents=True, exist_ok=True)
     with open(f"{save_dir}/{filename}", 'w') as f:
         json.dump(dictionary, f)
