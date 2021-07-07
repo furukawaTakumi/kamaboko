@@ -13,8 +13,14 @@ class KamabokoTest(unittest.TestCase):
         pass
 
     def evaluate(self, text, excepted):
-        result = self.kamaboko.analyze(text)
+        result = self.kamaboko.count_polality(text)
         self.assertEqual(excepted, result, text)
+    
+    def evaluate_percentage(self, text, positive_percent, negative_percent):
+        result = self.kamaboko.analyze(text)
+        self.assertAlmostEqual(1, positive_percent + negative_percent, "合計が1になりません．\ninput: f{text}")
+        self.assertAlmostEqual(result["positive"], positive_percent)
+        self.assertAlmostEqual(result["negative"], negative_percent)
 
     def test_analyze(self):
         self.evaluate("""
@@ -66,5 +72,15 @@ class KamabokoTest(unittest.TestCase):
     #     result = self.kamaboko.analyze(text)
     #     self.assertEqual((1, 1), result, text)
 
-    def tearDown(self):
-        pass
+    # def test_other_negation(self): # TODO
+    #     self.evaluate("利点しかない", (1, 0))
+
+    def test_percentage(self):
+        self.evaluate_percentage("""利点はある""", 1, 0)
+        self.evaluate_percentage("企業は損失を被った", 0, 1)
+        self.evaluate_percentage("""電話にでんわ！""", 0.5, 0.5) # 何もマッチしないとき
+        self.evaluate_percentage("""利益は今週末に間違いなく洞窟に入ったところに置いておくと言われていたのに払われていない．""", 0.5, 0.5) # polalityの数が 1 : 1
+        self.evaluate_percentage("""
+        日本にいた頃は一日中、毎晩深夜遅くまで働いていたせいで、美容とかおしゃれとかに縁遠く、立派な喪女だったけど、あまりの変化に最近では鏡を見るのがちょっと楽しい。
+        """, 0.75, 0.25)
+        

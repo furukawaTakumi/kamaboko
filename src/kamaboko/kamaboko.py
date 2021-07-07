@@ -11,13 +11,28 @@ class Kamaboko:
         self.cabocha = CaboChaAnalyzer()
 
     def analyze(self, text):
+        tokens = self.__analyze(text)
+        positive, negative = self.__count_polality(tokens)
+        all_cnt = positive + negative
+        if all_cnt == 0:
+            return { "positive": 0.5, "negative": 0.5 }
+        else:
+            return {
+                "positive": positive / all_cnt,
+                "negative": negative / all_cnt
+            }
+
+    def count_polality(self, text):
+        tokens = self.__analyze(text)
+        return self.__count_polality(tokens)
+
+    def __analyze(self, text):
         tokens, chunks = self.cabocha(text)
         self.__apply_polality_word(tokens)
         self.__mark_subject(tokens, chunks)
         self.__mark_parallel(tokens)
         self.__apply_negation_word(tokens, chunks)
-        result = self.__count_polality(tokens)
-        return result
+        return tokens
 
     def __apply_polality_word(self, tokens: list):
         for idx, _ in enumerate(tokens):
