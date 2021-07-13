@@ -3,12 +3,17 @@ import re
 
 from .PolalityDict import PolalityDict
 from .analyzers import CaboChaAnalyzer
+from .DisplayFilter import DisplayFilter
 
 
 class Kamaboko:
-    def __init__(self) -> None:
+    def __init__(self, display_filter: DisplayFilter = None) -> None:
         self.dictionary = PolalityDict()
         self.cabocha = CaboChaAnalyzer()
+        if display_filter is None:
+            self.display_filter = DisplayFilter()
+        else:
+            self.display_filter = display_filter
 
     def analyze(self, text):
         tokens = self.__analyze(text)
@@ -21,6 +26,10 @@ class Kamaboko:
                 "positive": positive / all_cnt,
                 "negative": negative / all_cnt
             }
+
+    def analyzed_sequence(self, text):
+        tokens = self.__analyze(text)
+        return self.display_filter.done(tokens)
 
     def count_polality(self, text):
         tokens = self.__analyze(text)
