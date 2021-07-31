@@ -18,6 +18,18 @@ class PolalityDict():
         self.__check_exist_dictionary(self.resource_path)
         self.dictionary = self.__load_dict(self.resource_path)
         self.__define_dict_methods()
+    
+    def is_negation(self, token):
+        if  token.standard_form == 'ん' \
+        and token.pos == '名詞' \
+        and token.pos_detail_1 == '非自立' \
+        and token.pos_detail_2 == '一般':
+            return False # 否定でない「あるんじゃない」などを否定としないため
+
+        if token.standard_form in self.NEGATION_WORDS:
+            return True
+        else:
+            return False
 
     def __load_dict(self, resource_path):
         dictionary = defaultdict(lambda: 0)
