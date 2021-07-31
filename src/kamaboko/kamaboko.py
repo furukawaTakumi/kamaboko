@@ -129,7 +129,7 @@ class Kamaboko:
             if apply_scaned and 'is_scaned' in chunk_items[idx].keys():
                 break
             if not 'is_collocation_parts' in c.keys() \
-            and c.standard_form in self.dictionary.NEGATION_WORDS:
+            and self.dictionary.is_negation(c):
                 negation_cnt += 1
             c.is_scaned = True
         return negation_cnt
