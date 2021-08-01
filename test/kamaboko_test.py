@@ -17,6 +17,7 @@ class KamabokoTest(unittest.TestCase):
 
     def evaluate(self, text, excepted):
         result = self.kamaboko.count_polality(text)
+        # print('xxx', self.kamaboko.analyzed_sequence(text))
         self.assertEqual(excepted, result, text)
     
     def evaluate_percentage(self, text, positive_percent, negative_percent):
@@ -68,7 +69,7 @@ class KamabokoTest(unittest.TestCase):
         self.evaluate("マイホームの外は魔物の脅威で溢れているんだから。", (0, 1))
     
     def test_kamosirenai(self):
-        self.evaluate("そうすれば，利益が出たかもしれない", (1,0)) # 連語をまとめて判断する
+        self.evaluate("そうすれば，利益が出たかもしれない", (1, 0)) # 連語をまとめて判断する
         pass
 
     def test_tigainai(self):
@@ -76,9 +77,12 @@ class KamabokoTest(unittest.TestCase):
         self.evaluate("この世界では貝殻はお金に違いない！", (1, 0))
         pass
 
+    def test_aruzyanai(self):
+        self.evaluate("ほら，お金とか宝石とか，あるじゃない．",(2, 0))
+
     @unittest.skip('no implement')
     def test_sinakyanaranai(self):
-        # self.evaluate("一度痛い思いをしなきゃならないけど、それを我慢すれば、耐性を得ることができる。", (1, 2)) # しなきゃならないはないが二つでていずれにせよ2回否定して極性が戻るのでやらなくても良いかも
+        self.evaluate("一度痛い思いをしなきゃならないけど、それを我慢すれば、耐性を得ることができる。", (1, 2)) # しなきゃならないはないが二つでていずれにせよ2回否定して極性が戻るのでやらなくても良いかも
         pass
 
     @unittest.skip('no implement')

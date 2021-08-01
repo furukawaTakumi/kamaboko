@@ -25,6 +25,9 @@ class DisplayFilter:
             'negation_count',
             'is_subject',
             'is_scaned',
+            'is_aruzyanai',
+            'is_tigainai',
+            'is_kamosirenai'
         }
         default_keys = kamaboko_added_key | analyzer_added_key
         if len(display_keys) == 0:
