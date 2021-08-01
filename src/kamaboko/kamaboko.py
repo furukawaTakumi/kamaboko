@@ -42,6 +42,7 @@ class Kamaboko:
         self.__mark_subject(tokens, chunks)
         self.__mark_parallel(tokens)
         self.__mark_tigainai(chunks)
+        self.__mark_kamosirenai(chunks)
         self.__apply_negation_word(tokens, chunks)
         return tokens
 
@@ -134,6 +135,7 @@ class Kamaboko:
             if \
             not 'is_collocation_parts' in tkn.keys() \
             and not 'is_tigainai' in tkn.keys() \
+            and not 'is_kamosirenai' in tkn.keys() \
             and self.dictionary.is_negation(tkn):
                 negation_cnt += 1
             tkn.is_scaned = True
@@ -182,6 +184,12 @@ class Kamaboko:
             if Rules.is_tigainai(chunk):
                 for token in chunk:
                     token.is_tigainai = True
+
+    def __mark_kamosirenai(self, chunks):
+        for chunk in chunks:
+            if Rules.is_kamosirenai(chunk):
+                for token in chunk:
+                    token.is_kamosirenai = True
 
     def __calc_score(self, polality: str):
         if polality == 'p':

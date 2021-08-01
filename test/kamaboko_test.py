@@ -67,9 +67,8 @@ class KamabokoTest(unittest.TestCase):
         self.evaluate("まして私は前世では学校に通うだけで、息切れするようなもやしっ子だったんだし。", (0, 1))
         self.evaluate("マイホームの外は魔物の脅威で溢れているんだから。", (0, 1))
     
-    @unittest.skip('no implement')
     def test_kamosirenai(self):
-    #     self.evaluate("そうすれば，利益が出たかもしれない", (1,0)) # 連語をまとめて判断する
+        self.evaluate("そうすれば，利益が出たかもしれない", (1,0)) # 連語をまとめて判断する
         pass
 
     def test_tigainai(self):
