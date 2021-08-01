@@ -4,6 +4,7 @@ import re
 from .PolalityDict import PolalityDict
 from .analyzers import CaboChaAnalyzer
 from .DisplayFilter import DisplayFilter
+from .Rules import Rules
 
 
 class Kamaboko:
@@ -40,6 +41,7 @@ class Kamaboko:
         self.__apply_polality_word(tokens)
         self.__mark_subject(tokens, chunks)
         self.__mark_parallel(tokens)
+        self.__mark_tigainai(chunks)
         self.__apply_negation_word(tokens, chunks)
         return tokens
 
@@ -121,17 +123,20 @@ class Kamaboko:
 
     def __negation_count(self, chunk_items, apply_scaned=True):
         negation_cnt = 0
-        for idx, c in enumerate(chunk_items):
+
+        for idx, tkn in enumerate(chunk_items):
             if idx + 1 < len(chunk_items) \
-            and '接続助詞' == c.pos_detail_1 \
+            and '接続助詞' == tkn.pos_detail_1 \
             and chunk_items[idx + 1].pos_detail_1 == '自立':
                 break
             if apply_scaned and 'is_scaned' in chunk_items[idx].keys():
                 break
-            if not 'is_collocation_parts' in c.keys() \
-            and self.dictionary.is_negation(c):
+            if \
+            not 'is_collocation_parts' in tkn.keys() \
+            and not 'is_tigainai' in tkn.keys() \
+            and self.dictionary.is_negation(tkn):
                 negation_cnt += 1
-            c.is_scaned = True
+            tkn.is_scaned = True
         return negation_cnt
 
     def __mark_subject(self, tokens, chunks):
@@ -171,6 +176,12 @@ class Kamaboko:
                 tokens[idx].is_parallel_parts = True
             tokens[m.start()].is_parallel_start = True
             tokens[m.end() - 1].is_parallel_end = True
+
+    def __mark_tigainai(self, chunks):
+        for chunk in chunks:
+            if Rules.is_tigainai(chunk):
+                for token in chunk:
+                    token.is_tigainai = True
 
     def __calc_score(self, polality: str):
         if polality == 'p':

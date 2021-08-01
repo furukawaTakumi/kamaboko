@@ -1,15 +1,18 @@
 
 
 import unittest
+from unittest.case import SkipTest
 
 
 from kamaboko import Kamaboko
+import kamaboko
 
 # 日本語評価極性辞書（用言編）・日本語評価極性辞書（名詞編）を用いた場合のテスト
 
 class KamabokoTest(unittest.TestCase):
     def setUp(self):
-        self.kamaboko = Kamaboko()
+        f = kamaboko.DisplayFilter({'standard_form', 'polality', 'negation_count'})
+        self.kamaboko = Kamaboko(f)
         pass
 
     def evaluate(self, text, excepted):
@@ -64,34 +67,39 @@ class KamabokoTest(unittest.TestCase):
         self.evaluate("まして私は前世では学校に通うだけで、息切れするようなもやしっ子だったんだし。", (0, 1))
         self.evaluate("マイホームの外は魔物の脅威で溢れているんだから。", (0, 1))
     
+    @unittest.skip('no implement')
     def test_kamosirenai(self):
     #     self.evaluate("そうすれば，利益が出たかもしれない", (1,0)) # 連語をまとめて判断する
         pass
 
     def test_tigainai(self):
-        # self.evaluate("きっとこの石が情報の価値もない、本当にただの石ころだからに違いない！", (1, 1))
+        self.evaluate("きっとこの石が情報の価値もない、本当にただの石ころだからに違いない！", (1, 1))
+        self.evaluate("この世界では貝殻はお金に違いない！", (1, 0))
         pass
 
+    @unittest.skip('no implement')
     def test_sinakyanaranai(self):
         # self.evaluate("一度痛い思いをしなきゃならないけど、それを我慢すれば、耐性を得ることができる。", (1, 2)) # しなきゃならないはないが二つでていずれにせよ2回否定して極性が戻るのでやらなくても良いかも
         pass
 
+    @unittest.skip('no implement')
     def test_punctuation_cat(self):
-        # self.evaluate("まあ、耐性があるおかげか、我慢できなくはない。", (1, 0)) # 
-        # self.evaluate("本当は素早さだけじゃなくて、その他の運動能力も軒並み前世より高いです、はい。", (2, 0)) # だけでなく他も高い
-        # self.evaluate("お金が欲しいといっているわけではなくて") # 誤解を解く
-        # self.evaluate("他にどんなスキルがあったのかはわからないけど、もしかしたらＬＶ１でももっと使えるスキルがあったかもしれないのに！", (0, -2))
+        self.evaluate("まあ、耐性があるおかげか、我慢できなくはない。", (1, 0)) # 
+        self.evaluate("本当は素早さだけじゃなくて、その他の運動能力も軒並み前世より高いです、はい。", (2, 0)) # だけでなく他も高い
+        self.evaluate("お金が欲しいといっているわけではなくて") # 誤解を解く
+        self.evaluate("他にどんなスキルがあったのかはわからないけど、もしかしたらＬＶ１でももっと使えるスキルがあったかもしれないのに！", (0, -2))
         pass
 
-    # def test_todo(self): # TODO
-    #     self.evaluate("つまり、ＬＶ１ではほとんど役に立たない効果しか発揮してくれないってことなんでしょ。", (1, 2)) # 否定箇所バグ
-    #     self.evaluate("情報が少なすぎてわからないことが多すぎる。", (0, -1)) # 否定み適用バグ
-    #     self.evaluate("まっとうな人生なんて送れないだろうし、あ、そもそも蜘蛛だから人生じゃなくて蜘蛛生か。", (0, 2)) # 蜘蛛が否定されてしまう
-    #     self.evaluate("体は魔物でも、それを動かす中身がしょっぱければ意味ないし。", (1, 2)) # 意味　が否定されない
-    #     self.evaluate("野生の本能で生きてる本物の魔物相手に、戦って勝てるかというと、難しいんじゃないかと思う。", (2, 1))
-        # self.evaluate("新しく新居を作るにも体力を消耗するし、何よりもいい条件の立地を探さなければならない。", (1, 0)) 
-        # self.evaluate("鑑定でこんなざまなら、他のスキルもきっとＬＶ１じゃどうしようもない効果しか出なかったんだと。", (1,1))
-        # self.evaluate("細いと脆くなって、太いと頑丈になるのは確認したけど、じゃあ、どこまでの力に耐えられるのかというのは、残念ながらわからなかった。", )
+    @unittest.skip('no implement')
+    def test_todo(self): # TODO
+        self.evaluate("つまり、ＬＶ１ではほとんど役に立たない効果しか発揮してくれないってことなんでしょ。", (1, 2)) # 否定箇所バグ
+        self.evaluate("情報が少なすぎてわからないことが多すぎる。", (0, -1)) # 否定み適用バグ
+        self.evaluate("まっとうな人生なんて送れないだろうし、あ、そもそも蜘蛛だから人生じゃなくて蜘蛛生か。", (0, 2)) # 蜘蛛が否定されてしまう
+        self.evaluate("体は魔物でも、それを動かす中身がしょっぱければ意味ないし。", (1, 2)) # 意味　が否定されない
+        self.evaluate("野生の本能で生きてる本物の魔物相手に、戦って勝てるかというと、難しいんじゃないかと思う。", (2, 1))
+        self.evaluate("新しく新居を作るにも体力を消耗するし、何よりもいい条件の立地を探さなければならない。", (1, 0)) 
+        self.evaluate("鑑定でこんなざまなら、他のスキルもきっとＬＶ１じゃどうしようもない効果しか出なかったんだと。", (1,1))
+        self.evaluate("細いと脆くなって、太いと頑丈になるのは確認したけど、じゃあ、どこまでの力に耐えられるのかというのは、残念ながらわからなかった。", )
 
 
     def test_parallel_negation(self):
