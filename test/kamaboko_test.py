@@ -1,6 +1,7 @@
 
 
 import unittest
+from pprint import pprint
 from unittest.case import SkipTest
 
 
@@ -11,13 +12,13 @@ import kamaboko
 
 class KamabokoTest(unittest.TestCase):
     def setUp(self):
-        f = kamaboko.DisplayFilter({'standard_form', 'polality', 'negation_count'})
+        f = kamaboko.DisplayFilter({'surface', 'polality', 'negation_count'})
         self.kamaboko = Kamaboko(f)
         pass
 
     def evaluate(self, text, excepted):
         result = self.kamaboko.count_polality(text)
-        # print('xxx', self.kamaboko.analyzed_sequence(text))
+        # pprint(self.kamaboko.analyzed_sequence(text))
         self.assertEqual(excepted, result, text)
     
     def evaluate_percentage(self, text, positive_percent, negative_percent):
@@ -90,13 +91,15 @@ class KamabokoTest(unittest.TestCase):
         self.evaluate("まあ、耐性があるおかげか、我慢できなくはない。", (1, 0)) # 
         self.evaluate("本当は素早さだけじゃなくて、その他の運動能力も軒並み前世より高いです、はい。", (2, 0)) # だけでなく他も高い
         self.evaluate("お金が欲しいといっているわけではなくて") # 誤解を解く
-        self.evaluate("他にどんなスキルがあったのかはわからないけど、もしかしたらＬＶ１でももっと使えるスキルがあったかもしれないのに！", (0, -2))
+        self.evaluate("他にどんなスキルがあったのかはわからないけど、もしかしたらＬＶ１でももっと使えるスキルがあったかもしれないのに！", (0, 2))
         pass
 
-    @unittest.skip('no implement')
+    def test_netation_appropriate(self):
+        self.evaluate("つまり、ＬＶ１ではほとんど役に立たない効果しか発揮してくれないってことなんでしょ。", (1, 2))
+
+    @unittest.skip('no imprement')
     def test_todo(self): # TODO
-        self.evaluate("つまり、ＬＶ１ではほとんど役に立たない効果しか発揮してくれないってことなんでしょ。", (1, 2)) # 否定箇所バグ
-        self.evaluate("情報が少なすぎてわからないことが多すぎる。", (0, -1)) # 否定み適用バグ
+        self.evaluate("情報が少なすぎてわからないことが多すぎる。", (0, 1)) # 否定み適用バグ
         self.evaluate("まっとうな人生なんて送れないだろうし、あ、そもそも蜘蛛だから人生じゃなくて蜘蛛生か。", (0, 2)) # 蜘蛛が否定されてしまう
         self.evaluate("体は魔物でも、それを動かす中身がしょっぱければ意味ないし。", (1, 2)) # 意味　が否定されない
         self.evaluate("野生の本能で生きてる本物の魔物相手に、戦って勝てるかというと、難しいんじゃないかと思う。", (2, 1))

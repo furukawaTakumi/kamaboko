@@ -125,6 +125,7 @@ class Kamaboko:
 
     def __negation_count(self, chunk_items, apply_scaned=True):
         negation_cnt = 0
+        polality_cnt_down = 1
 
         for idx, tkn in enumerate(chunk_items):
             if idx + 1 < len(chunk_items) \
@@ -133,6 +134,11 @@ class Kamaboko:
                 break
             if apply_scaned and 'is_scaned' in chunk_items[idx].keys():
                 break
+            if 'polality' in tkn.keys():
+                if polality_cnt_down:
+                    polality_cnt_down -= 1
+                else:
+                    break # 依存先にpolalityを持つ単語が来たらそこで一旦否定の適用は終了
             if \
             not 'is_collocation_parts' in tkn.keys() \
             and not 'is_tigainai' in tkn.keys() \

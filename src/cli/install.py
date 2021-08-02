@@ -36,7 +36,10 @@ def __construct_dict(data: Iterator, args) -> dict:
     dictionary = {}
     for row in data:
         key = row[args.word_idx]
-        dictionary[key] = __polality_label(row[args.polality_idx], args)
+        try:
+            dictionary[key] = __polality_label(row[args.polality_idx], args)
+        except KeyError as e:
+            print(e)
     return dictionary
 
 def __polality_label(label, args):
@@ -45,8 +48,7 @@ def __polality_label(label, args):
     elif label in args.negative_labels:
         return 'n'
     else:
-        print(f"Convert Warning: neither polality label '{label}' is not contained '{args.positive_labels}' or '{args.negative_labels}'.")
-        return 'e'
+        raise KeyError(f"Convert Warning: neither polality label '{label}' is not contained '{args.positive_labels}' or '{args.negative_labels}'.")
 
 def __parse_args():
     parser = argparse.ArgumentParser('argument parser')
