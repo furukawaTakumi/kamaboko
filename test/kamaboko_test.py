@@ -18,7 +18,7 @@ class KamabokoTest(unittest.TestCase):
 
     def evaluate(self, text, excepted):
         result = self.kamaboko.count_polality(text)
-        # pprint(self.kamaboko.analyzed_sequence(text))
+        pprint(self.kamaboko.analyzed_sequence(text))
         self.assertEqual(excepted, result, text)
     
     def evaluate_percentage(self, text, positive_percent, negative_percent):
@@ -97,10 +97,9 @@ class KamabokoTest(unittest.TestCase):
     def test_netation_appropriate(self):
         self.evaluate("つまり、ＬＶ１ではほとんど役に立たない効果しか発揮してくれないってことなんでしょ。", (1, 2))
 
-    @unittest.skip('no imprement')
+    # @unittest.skip('no imprement')
     def test_todo(self): # TODO
         self.evaluate("情報が少なすぎてわからないことが多すぎる。", (0, 1)) # 否定み適用バグ
-        self.evaluate("まっとうな人生なんて送れないだろうし、あ、そもそも蜘蛛だから人生じゃなくて蜘蛛生か。", (0, 2)) # 蜘蛛が否定されてしまう
         self.evaluate("体は魔物でも、それを動かす中身がしょっぱければ意味ないし。", (1, 2)) # 意味　が否定されない
         self.evaluate("野生の本能で生きてる本物の魔物相手に、戦って勝てるかというと、難しいんじゃないかと思う。", (2, 1))
         self.evaluate("新しく新居を作るにも体力を消耗するし、何よりもいい条件の立地を探さなければならない。", (1, 0)) 
