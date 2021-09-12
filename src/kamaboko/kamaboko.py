@@ -70,7 +70,6 @@ class Kamaboko:
                     chunk_items = self.__collect_dep_chunks(c.belong_to, chunks)
                     negation_count = self.__negation_count(chunk_items, False)
                     c.negation_count = negation_count
-                    print('c', c.surface, negation_count)
                     c.polality *= pow(-1, negation_count)
 
         for c_idx, chunk in enumerate(chunks):
@@ -80,7 +79,6 @@ class Kamaboko:
                 chunk_items = self.__collect_dep_chunks(c_idx, chunks)
                 negation_count = self.__negation_count(chunk_items)
                 tkn.negation_count = negation_count
-                print('tkn', tkn.surface, negation_count)
                 tkn.polality = tkn.polality * pow(-1, negation_count)
 
         parallel_parts_items = self.__collect_parallel_parts(tokens)
@@ -130,7 +128,6 @@ class Kamaboko:
         polality_cnt_down = 1
 
         for idx, tkn in enumerate(chunk_items):
-            print(tkn.surface)
             if apply_scaned and 'is_scaned' in chunk_items[idx].keys():
                 break
             if 'polality' in tkn.keys():
