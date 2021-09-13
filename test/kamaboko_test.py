@@ -13,12 +13,17 @@ import kamaboko
 class KamabokoTest(unittest.TestCase):
     def setUp(self):
         f = kamaboko.DisplayFilter({'surface', 'polality', 'negation_count'})
-        self.kamaboko = Kamaboko(f)
+        self.kamaboko = Kamaboko(display_filter=f, negative_negation_is_not_positive=False)
+        self.kamaboko_default = Kamaboko()
         pass
 
     def evaluate(self, text, excepted):
         result = self.kamaboko.count_polality(text)
         self.assertEqual(excepted, result, text)
+
+    def evaluate_default(self, text, expected):
+        result = self.kamaboko_default.count_polality(text)
+        self.assertEqual(expected, result)
     
     def evaluate_percentage(self, text, positive_percent, negative_percent):
         result = self.kamaboko.analyze(text)
@@ -136,4 +141,7 @@ class KamabokoTest(unittest.TestCase):
         self.evaluate_percentage("""
         日本にいた頃は一日中、毎晩深夜遅くまで働いていたせいで、美容とかおしゃれとかに縁遠く、立派な喪女だったけど、あまりの変化に最近では鏡を見るのがちょっと楽しい。
         """, 0.75, 0.25)
-        
+
+    def negative_negation_is_not_positive(self):
+        self.evaluate_default("""わかった、怒らないから、はなしてごらん？""", (0, 0))
+        self.evaluate_default("""利益は今週末に間違いなく洞窟に入ったところに置いておくと言われていたのに払われていない．""", (0, 1))

@@ -8,9 +8,10 @@ from .Rules import Rules
 
 
 class Kamaboko:
-    def __init__(self, display_filter: DisplayFilter = None) -> None:
+    def __init__(self, display_filter: DisplayFilter = None, negative_negation_is_not_positive = True) -> None:
         self.dictionary = PolalityDict()
         self.cabocha = CaboChaAnalyzer()
+        self.nnip = negative_negation_is_not_positive
         if display_filter is None:
             self.display_filter = DisplayFilter()
         else:
@@ -70,7 +71,6 @@ class Kamaboko:
                     chunk_items = self.__collect_dep_chunks(c.belong_to, chunks)
                     negation_count = self.__negation_count(chunk_items, False)
                     c.negation_count = negation_count
-                    c.polality *= pow(-1, negation_count)
 
         for c_idx, chunk in enumerate(chunks):
             for tkn in chunk:
@@ -79,7 +79,6 @@ class Kamaboko:
                 chunk_items = self.__collect_dep_chunks(c_idx, chunks)
                 negation_count = self.__negation_count(chunk_items)
                 tkn.negation_count = negation_count
-                tkn.polality = tkn.polality * pow(-1, negation_count)
 
         parallel_parts_items = self.__collect_parallel_parts(tokens)
 
@@ -96,7 +95,6 @@ class Kamaboko:
             for tkn in parts:
                 if not 'negation_count' in tkn.keys() or tkn.negation_count == 0:
                     tkn.negation_count = v
-                    tkn.polality *= pow(-1, v)
 
     def __collect_parallel_parts(self, tokens):
         parallel_parts = []
@@ -214,8 +212,12 @@ class Kamaboko:
         for tkn in tokens:
             if not 'polality' in tkn.keys():
                 continue
-            if 0 < tkn['polality']:
+            if self.nnip:
+                if tkn.polality < 0 and tkn.negation_count % 2 == 1:
+                    continue
+            polality = tkn.polality * pow(-1, tkn.negation_count)
+            if 0 < polality:
                 positive_num += 1
-            elif 0 > tkn['polality']:
+            elif 0 > polality:
                 negative_num += 1
         return positive_num, negative_num

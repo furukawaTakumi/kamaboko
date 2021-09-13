@@ -72,7 +72,7 @@ result = analyzer.analyzed_sequence('こんにちは．今日はいい天気で�
 項目の詳細は`src/kamaboko/analyzers/CaboChaAnalyzer.py`を参照してください．  
 なお，動的に追加される基本的な属性には以下のものがあります．  
 - polality
-  - 形態素の極性を表現
+  - 形態素そのものの極性を表現
 - negation_count
   - その形態素が否定された回数
 
