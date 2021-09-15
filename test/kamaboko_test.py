@@ -9,6 +9,10 @@ from kamaboko import Kamaboko
 import kamaboko
 
 # 日本語評価極性辞書（用言編）・日本語評価極性辞書（名詞編）を用いた場合のテスト
+# テストのテキストとして，小説家になろうにて公開されている小説本文を一部使わせてもらっています．
+# 出典：
+# ・橘由華「聖女の魔力は万能です」https://ncode.syosetu.com/n8139dg 2021/09/15
+# ・馬場翁「蜘蛛ですが、なにか？」https://ncode.syosetu.com/n7975cr 2021/09/15
 
 class KamabokoTest(unittest.TestCase):
     def setUp(self):
